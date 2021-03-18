@@ -18,8 +18,5 @@ namespace ProjectManagement.Entities
 
         public DateTime CreatedOn { get; set; }
 
-        public virtual User AssignedToUser { get; set; }
-
-        public virtual Project Project { get; set; }
     }
 }

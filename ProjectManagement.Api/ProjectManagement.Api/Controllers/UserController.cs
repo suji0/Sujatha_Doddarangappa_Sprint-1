@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectManagement.Entities;
-using System;
 using System.Collections.Generic;
+using ProjectManagement.Data.Interfaces;
+using ProjectManagement.Shared;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProjectManagement.Api.Controllers
 {
@@ -11,15 +11,32 @@ namespace ProjectManagement.Api.Controllers
     [Route("api/User")]
     public class UserController : BaseController<User>
     {
+        public PMContext<User> _userContext;
+        public UserController(PMContext<User> userContext, IBaseRepository<User> repository) : base(repository)
+        {
+            _userContext = userContext;
+            if (!_userContext.Table.Any())
+            {
+                _userContext.Table.Add(new User
+                {
+                    ID = 001,
+                    FirstName = "Sujatha",
+                    LastName = "D",
+                    Email = "sujatha8050@gmail.com",
+                    Password = "Suji8050"
+                });
+            }
+            _userContext.SaveChanges();
+        }
         [HttpGet]
-        public IActionResult GetAllUsers()
+        public IActionResult Get()
         {
             return base.Get();
         }
 
         [HttpGet]
         [Route("{userId}")]
-        public IActionResult GetUser(long userId)
+        public IActionResult Get(long userId)
         {
             return base.Get(userId);
         }
@@ -27,18 +44,19 @@ namespace ProjectManagement.Api.Controllers
         [HttpPut]
         public IActionResult UpdateUser([FromBody] User userDetail)
         {
-            return base.Put();
+            return base.Put(userDetail);
         }
 
         [HttpPost]
         public IActionResult CreateUser([FromBody] User userDetail)
         {
-            return base.Post();
+            return base.Post(userDetail);
         }
 
-        public IActionResult DeleteUser([FromBody] User userDetail)
+        [HttpDelete]
+        public IActionResult DeleteUser(long Id)
         {
-            return base.Delete();
+            return base.Delete(Id);
         }
 
     }

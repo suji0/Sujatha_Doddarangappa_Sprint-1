@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -8,17 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using ProjectManagement.Data.Interfaces;
 using ProjectManagement.Data.Implementation;
 using ProjectManagement.Entities;
 using ProjectManagement.Api.Controllers;
+using ProjectManagement.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectManagement.Api
 {
     public class Startup
     {
+        public BaseEntity T;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -29,24 +28,39 @@ namespace ProjectManagement.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-          /*  services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Project Management API", Version = "v1" });
-            }); */
-
             services.AddControllers();
-
-            services.AddTransient<IBaseRepository<User>, BaseRepository<User>>();
-
+            services.AddTransient<IBaseRepository<BaseEntity>, BaseRepository<BaseEntity>>();
+            services.AddDbContext<PMContext<BaseEntity>>(context =>
+            {
+                context.UseInMemoryDatabase("ProjectManagment");
+            });
+            services.AddDbContext<PMContext<Project>>(context =>
+            {
+                context.UseInMemoryDatabase("Project");
+            });
+            services.AddDbContext<PMContext<Task>>(context =>
+            {
+                context.UseInMemoryDatabase("Task");
+            });
+            services.AddDbContext<PMContext<User>>(context =>
+            {
+                context.UseInMemoryDatabase("User");
+            });
             services.AddTransient<IBaseRepository<Task>, BaseRepository<Task>>();
-
             services.AddTransient<IBaseRepository<Project>, BaseRepository<Project>>();
-
-            services.AddTransient<BaseController<Project>, ProjectController>();
-
-            services.AddTransient<BaseController<Task>, TaskController>();
-
-            services.AddTransient<BaseController<User>, UserController>();
+            services.AddTransient<IBaseRepository<User>, BaseRepository<User>>();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Project Management API",
+                    Version = "v1",
+                    Description = "Project Management API"
+                });
+            });
+            //services.AddTransient<BaseController<T>, ProjectController>();
+            //services.AddTransient<BaseController<Task>, TaskController>();
+            //services.AddTransient<BaseController<User>, UserController>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,13 +71,6 @@ namespace ProjectManagement.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            /*app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project API V1");
-            });
-            */
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -73,6 +80,16 @@ namespace ProjectManagement.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Project Management API V1");
+
             });
         }
     }

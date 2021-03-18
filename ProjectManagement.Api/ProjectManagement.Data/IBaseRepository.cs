@@ -12,11 +12,11 @@ namespace ProjectManagement.Data.Interfaces
 
         T Get(long id);
 
-        T Add(T entity);
+        int Add(T entity);
 
-        T Update(T entity);
+        int Update(T entity);
 
-        void Delete(long id);
+        int Delete(long id);
 
     }
 }
